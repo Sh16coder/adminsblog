@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service restricted · overuse (Firebase)</title>
+    <!-- Font Awesome 5 (free) for icons -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <!-- Google Font: Inter clean -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f5fe 0%, #e9eef7 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #1e293b;
+        }
+
+        /* main card — clean, elevated, with firebase accents */
+        .subscription-card {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            border-radius: 2.5rem;
+            box-shadow: 0 30px 60px -15px rgba(0, 40, 80, 0.25),
+                        0 0 0 1px rgba(255, 160, 0, 0.1) inset;
+            overflow: hidden;
+            border: 1px solid rgba(255, 180, 40, 0.2);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+        }
+
+        /* left side – termination message (Firebase personality) */
+        .termination-panel {
+            background: #0f172a;
+            background-image: radial-gradient(circle at 20% 30%, rgba(255, 160, 0, 0.08) 0%, transparent 30%),
+                              radial-gradient(circle at 80% 70%, rgba(255, 160, 0, 0.05) 0%, transparent 35%);
+            padding: 3rem 2.5rem;
+            color: #edf2f7;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .firebase-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 2.2rem;
+        }
+
+        .firebase-logo i {
+            font-size: 2.2rem;
+            color: #fbbf24;
+            filter: drop-shadow(0 4px 6px rgba(251, 191, 36, 0.3));
+        }
+
+        .firebase-logo span {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fbbf24, #ff9f1c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .badge-terminated {
+            background: rgba(239, 68, 68, 0.18);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 100px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            width: fit-content;
+            color: #fecaca;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .badge-terminated i {
+            color: #f87171;
+            font-size: 0.9rem;
+        }
+
+        .termination-panel h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .highlight-terminated {
+            color: #fbbf24;
+            border-bottom: 3px solid #ff9f1c;
+            padding-bottom: 2px;
+            display: inline-block;
+        }
+
+        .usage-warning {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin: 1.8rem 0 2rem 0;
+            border: 1px solid rgba(255, 200, 90, 0.15);
+            backdrop-filter: blur(4px);
+        }
+
+        .usage-meter {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .meter-bar {
+            flex: 1;
+            height: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 40px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #ef4444);
+            border-radius: 40px;
+            box-shadow: 0 0 12px #f97316;
+        }
+
+        .usage-stats {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .usage-stats strong {
+            color: #fbbf24;
+            font-size: 1.2rem;
+        }
+
+        .overage-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        .overage-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 0.8rem 0;
+            font-size: 0.98rem;
+            color: #cbd5e1;
+        }
+        .overage-list i {
+            width: 1.4rem;
+            color: #f97316;
+        }
+
+        /* right side – plans info panel (user‑facing, no buy button) */
+        .plans-panel {
+            background: white;
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .plans-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .plans-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .plans-header p {
+            color: #475569;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            border-left: 4px solid #fbbf24;
+            padding-left: 1rem;
+            background: #fefce8;
+            border-radius: 0 8px 8px 0;
+            line-height: 1.4;
+            padding: 0.7rem 1rem;
+        }
+
+        .plan-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .plan-item {
+            border: 2px solid #e9edf2;
+            border-radius: 1.8rem;
+            padding: 1.5rem 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            background: white;
+            cursor: default;   /* not clickable for users – just informative */
+            transition: none;
+            opacity: 0.9;
+        }
+
+        .plan-item:hover {
+            border-color: #e9edf2;  /* no hover effect – static info */
+            background: white;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .plan-emoji {
+            font-size: 2.2rem;
+            min-width: 3rem;
+            text-align: center;
+            filter: grayscale(0.2);
+        }
+
+        .plan-detail {
+            flex: 1;
+        }
+
+        .plan-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .plan-name i {
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+
+        .plan-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+
+        .plan-price small {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .plan-desc {
+            font-size: 0.9rem;
+            color: #475569;
+            margin-top: 0.2rem;
+        }
+
+        /* NO BUY BUTTON — replaced with info message */
+        .user-notice {
+            background: #f1f5f9;
+            border-radius: 2rem;
+            padding: 1.2rem 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px dashed #fbbf24;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .user-notice i {
+            font-size: 2rem;
+            color: #fbbf24;
+        }
+
+        .user-notice p {
+            font-size: 0.95rem;
+            color: #334155;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .user-notice strong {
+            color: #b45309;
+        }
+
+        .fine-print {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-align: center;
+            border-top: 1px dashed #d1d5db;
+            padding-top: 1.5rem;
+        }
+
+        .fine-print i {
+            color: #fbbf24;
+        }
+
+        /* mobile responsiveness */
+        @media (max-width: 800px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            .termination-panel {
+                padding: 2rem;
+            }
+            .plans-panel {
+                padding: 2rem;
+            }
+        }
+
+        /* team firebase badge */
+        .team-badge {
+            margin-top: 1.5rem;
+            text-align: right;
+            font-size: 0.85rem;
+            color: #a0afbe;
+        }
+    </style>
+</head>
+<body>
+    <div class="subscription-card">
+        <div class="card-grid">
+            <!-- LEFT: TERMINATION MESSAGE + OVERUSE (TEAM FIREBASE) -->
+            <div class="termination-panel">
+                <div class="firebase-logo">
+                    <i class="fas fa-fire"></i>
+                    <span>Firebase</span>
+                </div>
+                <div class="badge-terminated">
+                    <i class="fas fa-exclamation-triangle"></i> SERVICE PARTIALLY TERMINATED
+                </div>
+                <h1>
+                    <span class="highlight-terminated">Overuse</span> limit exceeded<br>your project is restricted
+                </h1>
+                
+                <div class="usage-warning">
+                    <div class="usage-meter">
+                        <i class="fas fa-bolt" style="color: #fbbf24;"></i>
+                        <div class="meter-bar">
+                            <div class="meter-fill"></div>
+                        </div>
+                        <span class="usage-stats"><strong>312%</strong></span>
+                    </div>
+                    <p style="color:#e0e7ff; font-size:0.95rem; margin-bottom:0.8rem;">
+                        <i class="fas fa-clock" style="margin-right: 0.4rem;"></i>Current billing period: <strong>quota exhausted</strong>
+                    </p>
+                    <ul class="overage-list">
+                        <li><i class="fas fa-database"></i> Realtime database reads: 2.4M / 800K</li>
+                        <li><i class="fas fa-cloud-upload-alt"></i> Cloud Functions invocations: 980K / 500K</li>
+                        <li><i class="fas fa-video"></i> Cloud Storage egress: 210 GB / 100 GB</li>
+                        <li><i class="fas fa-users"></i> Auth active users: 185% over limit</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: auto; font-size:0.95rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 1rem; border: 1px dashed #fbbf2440;">
+                    <i class="fas fa-info-circle" style="color: #fbbf24; margin-right: 0.5rem;"></i>
+                    <span>Team Firebase has partially terminated free tier access.</span>
+                </div>
+            </div>
+
+            <!-- RIGHT: PLAN INFORMATION (USER VIEW – NO PURCHASE BUTTON) -->
+            <div class="plans-panel">
+                <div class="plans-header">
+                    <h2>⛔ service temporarily unavailable</h2>
+                    <p><i class="fas fa-bolt" style="color:#fbbf24;"></i> This project has exceeded its free quota. To restore full functionality, the project owner needs to subscribe.</p>
+                </div>
+
+                <!-- plans shown purely as reference – user cannot buy, only owner -->
+                <div class="plan-grid">
+                    <!-- plan 1: blaze -->
+                    <div class="plan-item">
+                        <div class="plan-emoji">⚡</div>
+                        <div class="plan-detail">
+                            <div class="plan-name">
+                                Blaze · pay as you go
+                                <i class="fas fa-crown" style="opacity:0.7;"></i>
+                            </div>
+                            <div class="plan-price">
+                                $0.06 <small>/unit</small>
+                            </div>
+                            <div class="plan-desc">
+                                Exceed quotas with auto-scaling, no cap, pay only for usage.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- plan 2: flame -->
+                    <div class="plan-item">
+                        <div class="plan-emoji">🔥</div>
+                        <div class="plan-detail">
+                            <div class="plan-name">
+                                Flame · pro fixed
+                                <i class="fas fa-star" style="color:#fbbf24;"></i>
+                            </div>
+                            <div class="plan-price">
+                                $25 <small>/month</small>
+                            </div>
+                            <div class="plan-desc">
+                                100 GB storage · 1M reads/day · 500k writes · priority support.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- plan 3: inferno -->
+                    <div class="plan-item">
+                        <div class="plan-emoji">🌋</div>
+                        <div class="plan-detail">
+                            <div class="plan-name">
+                                Inferno · business
+                                <i class="fas fa-gem" style="color:#fbbf24;"></i>
+                            </div>
+                            <div class="plan-price">
+                                $199 <small>/month</small>
+                            </div>
+                            <div class="plan-desc">
+                                Unlimited operations, dedicated support, SOC2, VPC, and more.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- plan 4: team custom -->
+                    <div class="plan-item">
+                        <div class="plan-emoji">👥</div>
+                        <div class="plan-detail">
+                            <div class="plan-name">
+                                Team Firebase custom
+                            </div>
+                            <div class="plan-price">
+                                custom
+                            </div>
+                            <div class="plan-desc">
+                                For enterprises & large teams — contact sales.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- replacement for buy button: user message (no purchase option) -->
+                <div class="user-notice">
+                    <i class="fas fa-hourglass-half"></i>
+                    <p><strong>Only project owners can upgrade.</strong> You are viewing this page as a user. Please contact your administrator or the team that manages the Firebase project.</p>
+                </div>
+
+                <div class="fine-print">
+                    <i class="fas fa-lock"></i> Firebase subscriptions are managed by project owners. <br> 
+                    You are seeing plan details for reference only.
+                </div>
+
+                <div class="team-badge">
+                    <i class="fas fa-fire" style="color: #fbbf24;"></i> #teamfirebase
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
